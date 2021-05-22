@@ -1,0 +1,34 @@
+#待更新
+
+ARCH = x86
+
+NAME := kernel.elf
+
+CFLAGS += -c -fno-builtin -fno-stack-protector -nostdlib -nostdinc -m32
+LDFLAGS += -T scripts/kernel.ld -m elf_i386
+GCC = gcc
+LD = ld
+RM = rm -rf
+
+kernelPath = kernel/arch/$(ARCH)
+kernelSrc = $(kernelPath)/main.c $(kernelPath)/header.S
+
+.PHONY: debug usr syatem clear kernel
+
+kernel: $(kernelSrc)
+	$(GCC) $(CFLAGS) -o target/kernel.o -Dtag=Debug $(kernelPath)/main.c
+	$(GCC) $(CFLAGS) -o target/header.o $(kernelPath)/header.S
+	$(LD) $(LDFLAGS) -o $(NAME) target/kernel.o target/header.o
+
+system: kernel
+
+usr: kernel system
+
+debug: system
+	$(GCC) $(CFLAGS) -o target/kernel.o -Dtag=Debug $(kernelPath)/main.c -g
+	$(GCC) $(CFLAGS) -o target/header.o $(kernelPath)/header.S -g
+	$(LD) $(LDFLAGS) -o $(NAME) target/kernel.o target/header.o
+
+clean:
+	$(RM) target/* *.elf
+	find . -name "*.o" -exec rm {} \;
